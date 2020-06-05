@@ -1,0 +1,92 @@
+<Project>
+  <!-- Accept override paths for live artifacts. -->
+  <PropertyGroup>
+    <ClickOnceArtifactsPath Condition="'$(ClickOnceOverridePath)' != ''">$([MSBuild]::NormalizeDirectory('$(ClickOnceOverridePath)'))</ClickOnceArtifactsPath>
+
+    <!-- Honor the RuntimeArtifactsPath property. -->
+    <ClickOnceArtifactsPath Condition="'$(ClickOnceArtifactsPath)' == '' and '$(RuntimeArtifactsPath)' != ''">$([MSBuild]::NormalizeDirectory('$(RuntimeArtifactsPath)'))</ClickOnceArtifactsPath>
+  </PropertyGroup>
+
+  <!--
+    If this is running and the output RID is not the same as the targeted RID, resolve live assets
+    for the targeted RID, if available. This is used to gather asset metadata for the platform
+    manifest. In CI (multi-machine lab) builds, ClickOnce and other artifacts are all downloaded
+    onto the current machine from all platforms for the Installer portion of the build.
+
+    Higher priority than override paths: in official builds, the overrides are passed to the build,
+    but we need to point to the AllArtifacts locations when building the platform manifest.
+  -->
+  <PropertyGroup Condition="
+    '$(RuntimeIdentifier)' != '$(OutputRid)' and
+    '$(AllArtifactsDownloadPath)' != ''">
+    <!-- Convert the OS component in the RID into names that match the job IDs. -->
+    <ArtifactPlatform>$(RuntimeIdentifier)</ArtifactPlatform>
+    <ArtifactPlatform>$(ArtifactPlatform.Replace('win-', 'Windows_NT-'))</ArtifactPlatform>
+    <ArtifactPlatform>$(ArtifactPlatform.Replace('unix-', 'Unix-'))</ArtifactPlatform>
+    <ArtifactPlatform>$(ArtifactPlatform.Replace('linux-', 'Linux-'))</ArtifactPlatform>
+    <ArtifactPlatform>$(ArtifactPlatform.Replace('osx-', 'OSX-'))</ArtifactPlatform>
+    <ArtifactPlatform>$(ArtifactPlatform.Replace('freebsd-', 'FreeBSD-'))</ArtifactPlatform>
+    <ArtifactPlatform>$(ArtifactPlatform.Replace('netbsd-', 'NetBSD-'))</ArtifactPlatform>
+    <!-- Artifact name uses '_' rather than '-'. -->
+    <ArtifactPlatform>$(ArtifactPlatform.Replace('-', '_'))</ArtifactPlatform>
+
+    <ClickOnceArtifactsPath>$([MSBuild]::NormalizeDirectory('$(AllArtifactsDownloadPath)', 'ClickOnceProduct_$(ArtifactPlatform)_$(ClickOnceConfiguration)'))</ClickOnceArtifactsPath>
+  </PropertyGroup>
+
+  <!-- Set up default live asset paths if no overrides provided. -->
+  <PropertyGroup>
+    <ClickOnceArtifactsPath Condition="'$(ClickOnceArtifactsPath)' == ''">$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin', 'ClickOnce', '$(ClickOnceTargetOS).$(TargetArchitecture).$(ClickOnceConfiguration)'))</ClickOnceArtifactsPath>
+  </PropertyGroup>
+
+  <!-- Set up artifact subpaths. -->
+  <PropertyGroup>
+    <ClickOnceCrossTargetComponentDirName Condition="'$(TargetArchitecture)' == 'arm64' and '$(BuildArchitecture)' != 'arm64'">x64</ClickOnceCrossTargetComponentDirName>
+    <ClickOnceCrossTargetComponentDirName Condition="'$(TargetArchitecture)' == 'arm' and '$(BuildArchitecture)' != 'arm' and '$(TargetsWindows)' == 'true'">x86</ClickOnceCrossTargetComponentDirName>
+    <ClickOnceCrossTargetComponentDirName Condition="'$(TargetArchitecture)' == 'arm' and '$(BuildArchitecture)' != 'arm' and '$(TargetsLinux)' == 'true'">x64</ClickOnceCrossTargetComponentDirName>
+    <ClickOnceCrossTargetComponentDirName Condition="'$(TargetArchitecture)' == 'armel' and '$(BuildArchitecture)' != 'armel' and '$(TargetsLinux)' == 'true'">x64</ClickOnceCrossTargetComponentDirName>
+  </PropertyGroup>
+
+  <Target Name="ResolveClickOnceFilesFromLocalBuild">
+    <Error Condition="!Exists('$(ClickOnceArtifactsPath)')" Text="The ClickOnce artifacts path does not exist '$(ClickOnceArtifactsPath)'. The ClickOnce subset category must be built before building this project." />
+
+    <PropertyGroup>
+      <ClickOnceArtifactsPath>$([MSBuild]::NormalizeDirectory('$(ClickOnceArtifactsPath)'))</ClickOnceArtifactsPath>
+      <ClickOnceCrossTargetComponentDir
+        Condition="'$(ClickOnceCrossTargetComponentDirName)' != ''">$([MSBuild]::NormalizeDirectory('$(ClickOnceArtifactsPath)','$(ClickOnceCrossTargetComponentDirName)','sharedFramework'))</ClickOnceCrossTargetComponentDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <ClickOnceFiles Include="$(ClickOnceSharedFrameworkDir)*.*" />
+      <ClickOnceCrossTargetFiles Condition="'$(ClickOnceCrossTargetComponentDir)' != ''" Include="$(ClickOnceCrossTargetComponentDir)*.*" IsNative="true" />
+      <ClickOnceFiles Include="$(ClickOnceArtifactsPath)Redist/**/*.dll" />
+      <ClickOnceFiles>
+        <IsNative>true</IsNative>
+      </ClickOnceFiles>
+      <ClickOnceFiles
+        Include="
+          $(ClickOnceSharedFrameworkDir)PDB/*.pdb;
+          $(ClickOnceSharedFrameworkDir)PDB/*.dbg;
+          $(ClickOnceSharedFrameworkDir)PDB/*.dwarf" />
+      <ClickOnceCrossTargetFiles Condition="'$(ClickOnceCrossTargetComponentDir)' != ''"
+        Include="
+          $(ClickOnceCrossTargetComponentDir)PDB/*.pdb;
+          $(ClickOnceCrossTargetComponentDir)PDB/*.dbg;
+          $(ClickOnceCrossTargetComponentDir)PDB/*.dwarf" />
+
+      <ClickOnceCrossTargetFiles>
+        <TargetPath>runtime/$(ClickOnceCrossTargetComponentDirName)_$(TargetArchitecture)/native</TargetPath>
+      </ClickOnceCrossTargetFiles>
+    </ItemGroup>
+
+    <Error Condition="'@(ClickOnceFiles)' == ''" Text="The ClickOnce subset category must be built before building this project." />
+  </Target>
+
+  <!--
+    Ensure artifacts exist for the more advanced paths. If the configuration is '*', don't emit
+    these errors: it isn't a local dev scenario.
+  -->
+
+  <PropertyGroup>
+    <LiveRuntimeIdentifierGraphPath>$(RuntimeIdGraphDefinitionFile)</LiveRuntimeIdentifierGraphPath>
+    <RuntimeIdentifierGraphPath Condition="'$(UseLiveRuntimeIdentifierGraph)' == 'true'">$(LiveRuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
+  </PropertyGroup>
+</Project>
