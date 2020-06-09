@@ -13,8 +13,6 @@ Param(
   [switch]$testnobuild,
   [ValidateSet("x86","x64","arm","arm64","wasm")][string[]][Alias('a')]$arch = @([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant()),
   [Parameter(Position=0)][string][Alias('s')]$subset,
-  [ValidateSet("Debug","Release","Checked")][string][Alias('rc')]$runtimeConfiguration,
-  [ValidateSet("Debug","Release")][string][Alias('lc')]$librariesConfiguration,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
@@ -25,8 +23,6 @@ function Get-Help() {
   Write-Host "  -os                       Build operating system: Windows_NT, Linux, OSX, or Browser"
   Write-Host "  -arch                     Build platform: x86, x64, arm, arm64, or wasm (short: -a). Pass a comma-separated list to build for multiple architectures."
   Write-Host "  -configuration            Build configuration: Debug, Release or Checked (short: -c). Pass a comma-separated list to build for multiple configurations"
-  Write-Host "  -runtimeConfiguration     Runtime build configuration: Debug, Release or Checked (short: -rc)"
-  Write-Host "  -librariesConfiguration   Libraries build configuration: Debug or Release (short: -lc)"
   Write-Host "  -verbosity                MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
   Write-Host "  -binaryLog                Output binary log (short: -bl)"
   Write-Host "  -help                     Print help and exit (short: -h)"
@@ -93,12 +89,6 @@ if ($vs) {
   # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
   $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH);
 
-  if ($runtimeConfiguration)
-  {
-    # Respect the RuntimeConfiguration variable for building inside VS with different runtime configurations
-    $env:RUNTIMECONFIGURATION=$runtimeConfiguration
-  }
-
   # Launch Visual Studio with the locally defined environment variables
   ."$vs"
 
@@ -120,8 +110,6 @@ foreach ($argument in $PSBoundParameters.Keys)
 {
   switch($argument)
   {
-    "runtimeConfiguration"   { $arguments += " /p:RuntimeConfiguration=$((Get-Culture).TextInfo.ToTitleCase($($PSBoundParameters[$argument])))" }
-    "librariesConfiguration" { $arguments += " /p:LibrariesConfiguration=$((Get-Culture).TextInfo.ToTitleCase($($PSBoundParameters[$argument])))" }
     "framework"              { $arguments += " /p:BuildTargetFramework=$($PSBoundParameters[$argument].ToLowerInvariant())" }
     "os"                     { $arguments += " /p:TargetOS=$($PSBoundParameters[$argument])" }
     "allconfigurations"      { $arguments += " /p:BuildAllConfigurations=true" }

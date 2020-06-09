@@ -21,8 +21,6 @@ usage()
   echo "  --os                       Build operating system: Windows_NT, Linux, FreeBSD, OSX, tvOS, iOS, Android, Browser, NetBSD or SunOS"
   echo "  --arch                     Build platform: x86, x64, arm, armel, arm64 or wasm"
   echo "  --configuration            Build configuration: Debug, Release or Checked (short: -c)"
-  echo "  --runtimeConfiguration     Runtime build configuration: Debug, Release or Checked (short: -rc)"
-  echo "  --librariesConfiguration   Libraries build configuration: Debug or Release (short: -lc)"
   echo "  --projects <value>         Project or solution file(s) to build"
   echo "  --verbosity                MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
   echo "  --binaryLog                Output binary log (short: -bl)"
@@ -224,46 +222,6 @@ while [[ $# > 0 ]]; do
      -coverage)
       arguments="$arguments /p:Coverage=true"
       shift 1
-      ;;
-
-     -runtimeconfiguration|-rc)
-      if [ -z ${2+x} ]; then
-        echo "No runtime configuration supplied. See help (--help) for supported runtime configurations." 1>&2
-        exit 1
-      fi
-      passedRuntimeConf="$(echo "$2" | awk '{print tolower($0)}')"
-      case "$passedRuntimeConf" in
-        debug|release|checked)
-          val="$(tr '[:lower:]' '[:upper:]' <<< ${passedRuntimeConf:0:1})${passedRuntimeConf:1}"
-          ;;
-        *)
-          echo "Unsupported runtime configuration '$2'."
-          echo "The allowed values are Debug, Release, and Checked."
-          exit 1
-          ;;
-      esac
-      arguments="$arguments /p:RuntimeConfiguration=$val"
-      shift 2
-      ;;
-
-     -librariesconfiguration|-lc)
-      if [ -z ${2+x} ]; then
-        echo "No libraries configuration supplied. See help (--help) for supported libraries configurations." 1>&2
-        exit 1
-      fi
-      passedLibConf="$(echo "$2" | awk '{print tolower($0)}')"
-      case "$passedLibConf" in
-        debug|release)
-          val="$(tr '[:lower:]' '[:upper:]' <<< ${passedLibConf:0:1})${passedLibConf:1}"
-          ;;
-        *)
-          echo "Unsupported libraries configuration '$2'."
-          echo "The allowed values are Debug and Release."
-          exit 1
-          ;;
-      esac
-      arguments="$arguments /p:LibrariesConfiguration=$val"
-      shift 2
       ;;
 
      -cross)
