@@ -1,8 +1,6 @@
 parameters:
   dependsOn: []
-  PublishRidAgnosticPackagesFromPlatform: ''
-  isOfficialBuild: false
-  logArtifactName: 'Logs-PrepareSignedArtifacts'
+  PublishRidAgnosticPackagesFromJobName: ''
 
 jobs:
 - job: PrepareSignedArtifacts
@@ -16,14 +14,9 @@ jobs:
   workspace:
     clean: all
 
-  variables:
-  - name: SignType
-    value: $[ coalesce(variables.OfficialSignType, 'real') ]
-
   steps:
-  - template: /eng/pipelines/common/clone-checkout-bundle-step.yml
 
-  - ${{ if eq(parameters.isOfficialBuild, true) }}:
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - task: NuGetAuthenticate@0
 
   - task: MicroBuildSigningPlugin@2
@@ -43,10 +36,9 @@ jobs:
 
   - script: >-
       build.cmd -ci
-      -subset installer.publish
-      -configuration Release
-      /p:PublishRidAgnosticPackagesFromPlatform=${{ parameters.PublishRidAgnosticPackagesFromPlatform }}
-      /p:OfficialBuildId=$(Build.BuildNumber)
+      -projects $(Build.SourcesDirectory)\publish\prepare-artifacts.proj
+      /p:Configuration=Release
+      /p:PublishRidAgnosticPackagesFromJobName=${{ parameters.PublishRidAgnosticPackagesFromJobName }}
       /p:SignType=$(SignType)
       /p:DotNetSignType=$(SignType)
       /bl:$(Build.SourcesDirectory)\prepare-artifacts.binlog
@@ -63,9 +55,9 @@ jobs:
     continueOnError: true
     condition: succeededOrFailed()
 
-  - task: PublishPipelineArtifact@1
-    displayName: Publish BuildLogs
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Artifact BuildLogs
     inputs:
-      targetPath: '$(Build.StagingDirectory)\BuildLogs'
-      artifactName: ${{ parameters.logArtifactName }}
+      PathtoPublish: '$(Build.StagingDirectory)\BuildLogs'
+      ArtifactName: Logs-PrepareSignedArtifacts
     condition: succeededOrFailed()
