@@ -5,7 +5,7 @@ rem This file invokes cmake and generates the build system for windows.
 set argC=0
 for %%x in (%*) do Set /A argC+=1
 
-if NOT %argC%==9 GOTO :USAGE
+if NOT %argC%==10 GOTO :USAGE
 if %1=="/?" GOTO :USAGE
 
 setlocal
@@ -27,6 +27,8 @@ set __HostVersion=%5
 set __AppHostVersion=%6
 set __HostFxrVersion=%7
 set __HostPolicyVersion=%8
+set __NetCorePkgVersion=%9
+shift
 
 :: Form the base RID to be used if we are doing a portable build
 if /i "%9" == "1"       (set cm_BaseRid=win)
@@ -43,7 +45,8 @@ popd
 :DoGen
 set __ExtraCmakeParams=%__ExtraCmakeParams% "-DCMAKE_SYSTEM_VERSION=10.0" "-DCLI_CMAKE_HOST_VER=%__HostVersion%" "-DCLI_CMAKE_COMMON_HOST_VER=%__AppHostVersion%" "-DCLI_CMAKE_HOST_FXR_VER=%__HostFxrVersion%"
 set __ExtraCmakeParams=%__ExtraCmakeParams% "-DCLI_CMAKE_HOST_POLICY_VER=%__HostPolicyVersion%" "-DCLI_CMAKE_PKG_RID=%cm_BaseRid%" "-DCLI_CMAKE_COMMIT_HASH=%__LatestCommit%" "-DCLR_CMAKE_HOST_ARCH=%__Arch%"
-set __ExtraCmakeParams=%__ExtraCmakeParams% "-DCMAKE_INSTALL_PREFIX=%__CMakeBinDir%" "-DCLI_CMAKE_RESOURCE_DIR=%__ResourcesDir%" "-DCLR_ENG_NATIVE_DIR="%__sourceDir%\..\..\..\eng\native"
+set __ExtraCmakeParams=%__ExtraCmakeParams% "-DCMAKE_INSTALL_PREFIX=%__CMakeBinDir%" "-DCLI_CMAKE_RESOURCE_DIR=%__ResourcesDir%" "-DCLR_ENG_NATIVE_DIR=%__sourceDir%\..\..\..\eng\native"
+set __ExtraCmakeParams=%__ExtraCmakeParams% "-DNET_CORE_PKG_VER=%__NetCorePkgVersion%" "-DDOTNET_PACKS_DIR="%__sourceDir%\..\..\..\.dotnet\packs"
 
 echo "%CMakePath%" %__sourceDir% -G "Visual Studio %__VSString%" %__ExtraCmakeParams%
 "%CMakePath%" %__sourceDir% -G "Visual Studio %__VSString%" %__ExtraCmakeParams%

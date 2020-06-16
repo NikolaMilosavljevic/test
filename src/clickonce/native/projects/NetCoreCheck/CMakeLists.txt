@@ -16,11 +16,7 @@ set(SOURCES
     ./TempRuntimeConfigFile.cpp
 )
 
-if($ENV{__BuildArch} STREQUAL x86)
-    link_directories(../../lib/x86)
-else()
-    link_directories(../../lib/x64)
-endif()
+link_directories(${APP_HOST_LIB_DIR})
 
 include(../exe.cmake)
 

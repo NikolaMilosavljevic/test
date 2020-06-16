@@ -43,7 +43,7 @@
         !Exists('$(IntermediateOutputRootPath)nativeResourceFiles\%(NativeFiles.Identity)\version_info.h')"/>
 
     <PropertyGroup>
-      <BuildArgs>$(Configuration) $(TargetArchitecture) apphostver $(AppHostVersion) hostver $(HostVersion) fxrver $(HostResolverVersion) policyver $(HostPolicyVersion) commit $(LatestCommit) rid $(OutputRid)</BuildArgs>
+      <BuildArgs>$(Configuration) $(TargetArchitecture) apphostver $(AppHostVersion) hostver $(HostVersion) fxrver $(HostResolverVersion) policyver $(HostPolicyVersion) netcorepkgver $(BundledNETCoreAppPackageVersion) commit $(LatestCommit) rid $(OutputRid)</BuildArgs>
       <BuildArgs Condition="'$(PortableBuild)' == 'true'">$(BuildArgs) portable</BuildArgs>
       <BuildArgs Condition="'$(IncrementalNativeBuild)' == 'true'">$(BuildArgs) incremental-native-build</BuildArgs>
       <BuildArgs>$(BuildArgs) rootdir $(RepoRoot)</BuildArgs>
