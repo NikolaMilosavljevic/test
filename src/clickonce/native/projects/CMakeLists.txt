@@ -1,1 +1,2 @@
 add_subdirectory(samplecppapp)
+add_subdirectory(NetCoreCheck)

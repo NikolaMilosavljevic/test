@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-int main()
+int __cdecl main()
 {
     std::cout << "Hello World!\n";
 }
