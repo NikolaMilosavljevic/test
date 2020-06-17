@@ -134,24 +134,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DotnetHostString>dotnet-host-</DotnetHostString>
-    <DotnetHostFxrString>dotnet-hostfxr-</DotnetHostFxrString>
-    <DotnetRuntimeString>dotnet-runtime-</DotnetRuntimeString>
-    <DotnetRuntimeDependenciesPackageString>dotnet-runtime-deps-</DotnetRuntimeDependenciesPackageString>
-
-    <CombinedInstallerStart>$(AssetOutputPath)$(DotnetRuntimeString)</CombinedInstallerStart>
-    <SharedHostInstallerStart>$(AssetOutputPath)$(DotnetHostString)</SharedHostInstallerStart>
-    <HostFxrInstallerStart>$(AssetOutputPath)$(DotnetHostFxrString)</HostFxrInstallerStart>
-    <SharedFrameworkInstallerStart>$(AssetOutputPath)$(DotnetRuntimeString)</SharedFrameworkInstallerStart>
-    <DotnetRuntimeDependenciesPackageInstallerStart>$(AssetOutputPath)$(DotnetRuntimeDependenciesPackageString)</DotnetRuntimeDependenciesPackageInstallerStart>
-
-    <!-- OSX specific intermediate package suffix . OSX specific intermediate packages are suffixed with -internal to avoid name collision for bundle package (dotnet-runtime-*)
-         and runtime ( earlier as dotnet-sharedframework-*)	-->
-    <InstallerStartSuffix Condition="'$(TargetOS)' == 'OSX'">internal</InstallerStartSuffix>
-    <SharedHostInstallerStart Condition="'$(TargetOS)' == 'OSX'">$(SharedHostInstallerStart)$(InstallerStartSuffix)-</SharedHostInstallerStart>
-    <HostFxrInstallerStart Condition="'$(TargetOS)' == 'OSX'">$(HostFxrInstallerStart)$(InstallerStartSuffix)-</HostFxrInstallerStart>
-    <SharedFrameworkInstallerStart Condition="'$(TargetOS)' == 'OSX'">$(SharedFrameworkInstallerStart)$(InstallerStartSuffix)-</SharedFrameworkInstallerStart>
-
+    <CombinedInstallerStart>$(AssetOutputPath)deployment-tools</CombinedInstallerStart>
   </PropertyGroup>
 
   <!-- Set up handling of build warnings -->
