@@ -31,7 +31,7 @@ Also see info about related [Microsoft .NET Core and ASP.NET Core Bug Bounty Pro
 
 ## Filing issues
 
-This repo should contain issues that are tied to .NET deployment tools and it's installation packages.
+This repo should contain issues that are tied to .NET deployment tools and its installation packages.
 
 For other issues, please use the following repos:
 
