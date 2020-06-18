@@ -50,8 +50,6 @@
   <Target Name="GetInstallerLocations"
           DependsOnTargets="GetProductVersions">
     <PropertyGroup>
-      <CombinedInstallerFile>$(CombinedInstallerStart)$(ProductMoniker)$(CombinedInstallerExtension)</CombinedInstallerFile>
-      <CombinedInstallerEngine>$(CombinedInstallerStart)$(ProductMoniker)-engine.exe</CombinedInstallerEngine>
       <CombinedCompressedFile>deployment-tools-$(ProductMoniker)$(CompressedFileExtension)</CombinedCompressedFile>
     </PropertyGroup>
 
