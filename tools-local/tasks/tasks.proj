@@ -1,14 +1,6 @@
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)**\*.csproj" Exclude="$(MSBuildProjectFullPath)" />
-    <ProjectReference Remove="$(MSBuildThisFileDirectory)mobile.tasks\AndroidAppBuilder\AndroidAppBuilder.csproj"
-                      Condition="'$(TargetOS)' != 'Android'" />
-    <ProjectReference Remove="$(MSBuildThisFileDirectory)mobile.tasks\AppleAppBuilder\AppleAppBuilder.csproj"
-                      Condition="'$(TargetOS)' != 'iOS' and '$(TargetOS)' != 'tvOS'" />
-    <ProjectReference Remove="$(MSBuildThisFileDirectory)mobile.tasks\WasmAppBuilder\WasmAppBuilder.csproj"
-                      Condition="'$(TargetOS)' != 'Browser'" />
-    <ProjectReference Remove="$(MSBuildThisFileDirectory)mobile.tasks\AotCompilerTask\MonoAOTCompiler.csproj"
-                      Condition="'$(TargetsMobile)' != 'true'" />
   </ItemGroup>
 
   <!--
